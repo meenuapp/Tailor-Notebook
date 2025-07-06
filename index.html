@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Tailor's Notebook</title>
+    <!-- Theme color for browser UI -->
+    <meta name="theme-color" content="#0ABAB5">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Link to the external manifest file -->
+    <link rel="manifest" href="manifest.json">
+    <style>
+        :root {
+            --primary-color: #0ABAB5;
+            --secondary-color: #56DFCF;
+            --accent-color: #ADEED9;
+            --bg-color: #f3fbfb;
+            --light-color: #FEFEFE;
+            --nav-bg-color: #eaf9f8;
+            --success-color: #28a745;
+            --danger-color: #dc3545;
+            --warning-color: #ffc107;
+            --info-color: #17a2b8;
+            --dark-color: #2c3e50;
+            --text-muted: #7f8c8d;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', 'Roboto', sans-serif; }
+        html { scroll-behavior: smooth; }
+        body { background-color: var(--bg-color); color: var(--dark-color); padding-top: 60px; padding-bottom: 80px; }
+
+        .app-header { background: linear-gradient(45deg, var(--primary-color), var(--secondary-color)); color: white; padding: 15px; text-align: center; position: fixed; top: 0; left: 0; right: 0; z-index: 500; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        .app-header h1 { font-size: 1.4rem; font-weight: 600; }
+        .container { max-width: 800px; margin: 0 auto; padding: 20px 15px; }
+        .view { display: none; }
+        .view.active { display: block; animation: fadeIn 0.4s; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        .page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; padding: 0 5px; }
+        .page-title { font-size: 1.8rem; color: var(--primary-color); }
+        .btn { padding: 12px 20px; border: none; border-radius: 50px; font-weight: 600; font-size: 0.95rem; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; transition: all 0.3s ease; }
+        .btn-primary { background: var(--primary-color); color: white; }
+        .btn-primary:hover { background: #089a95; }
+        .btn-icon { background: none; color: var(--primary-color); font-size: 1.5rem; padding: 5px; border-radius: 50%; width: 44px; height: 44px; }
+        
+        .search-container { position: relative; margin-bottom: 20px; }
+        .search-input { width: 100%; padding: 14px 20px 14px 50px; border-radius: 50px; border: 1px solid #ddd; font-size: 1rem; background: var(--light-color); color: var(--dark-color); }
+        .search-container .fa-search { position: absolute; left: 20px; top: 50%; transform: translateY(-50%); color: var(--text-muted); }
+
+        .item-list { display: grid; gap: 15px; }
+        .card { background: var(--light-color); border-radius: 16px; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.06); overflow: hidden; border-left: 5px solid var(--secondary-color); transition: transform 0.2s ease; }
+        .card:hover { transform: translateY(-3px); }
+        .card-header { display: flex; justify-content: space-between; align-items: center; padding: 20px; cursor: pointer; }
+        .card-title { font-size: 1.3rem; font-weight: 700; color: var(--dark-color); }
+        .card-subtitle { font-size: 0.9rem; color: var(--text-muted); }
+        .card-actions { display: flex; gap: 10px; }
+        .action-btn { width: 38px; height: 38px; border-radius: 50%; border: none; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: background-color 0.3s ease; font-size: 1rem; color: white; box-shadow: 0 2px 5px rgba(0,0,0,0.15); }
+        .action-btn.edit { background: var(--info-color); }
+        .action-btn.delete { background: var(--danger-color); }
+        .action-btn.call { background: var(--success-color); }
+        
+        .empty-state { text-align: center; padding: 40px 20px; background: var(--light-color); border-radius: 16px; color: var(--text-muted); border: 1px dashed var(--accent-color); }
+        .empty-state i { font-size: 3rem; margin-bottom: 15px; color: var(--accent-color); }
+        .empty-state p { font-size: 1.1rem; }
+        .empty-state .btn { margin-top: 15px; }
+
+        .customer-selection-header { background: var(--light-color); padding: 15px; border-radius: 12px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; border: 1px solid var(--accent-color); }
+        .customer-selection-header p { margin: 0; font-size: 1rem; color: var(--dark-color); font-weight: 500; }
+        .customer-selection-header .btn { padding: 8px 15px; font-size: 0.9rem; }
+        .customer-selection-header p strong { color: var(--primary-color); }
+
+        .bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; display: flex; justify-content: space-around; background: var(--nav-bg-color); box-shadow: 0 -5px 20px rgba(0, 0, 0, 0.1); border-top: 1px solid var(--accent-color); z-index: 100; }
+        .nav-item { flex-grow: 1; text-align: center; padding: 12px 5px; cursor: pointer; color: var(--text-muted); transition: all 0.3s ease; border-radius: 12px; margin: 4px; }
+        .nav-item.active { color: var(--primary-color); background: var(--light-color); }
+        .nav-item i { font-size: 1.4rem; display: block; margin-bottom: 4px; }
+        .nav-item span { font-size: 0.75rem; font-weight: 600; }
+
+        .financial-summary { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px; text-align: center; margin-bottom: 20px; padding: 20px; background: var(--light-color); border-radius: 16px; }
+        .summary-card .label { color: var(--text-muted); font-size: 0.9rem; }
+        .summary-card .amount { font-size: 1.8rem; font-weight: 700; }
+        .summary-card .amount.due { color: var(--danger-color); }
+        .dashboard-actions { display: flex; justify-content: center; gap: 10px; margin-bottom: 25px; flex-wrap: wrap; }
+        .section-title { margin: 25px 0 15px 0; font-size: 1.4rem; color: var(--dark-color); padding-bottom: 5px; border-bottom: 2px solid var(--accent-color); }
+        .order-card.Pending { border-left-color: var(--warning-color); }
+        .order-card.Delivered { border-left-color: var(--success-color); }
+        .order-card .card-body { padding: 0 20px 20px 20px; }
+
+        #dynamicFieldsContainer .form-group { display: flex; gap: 10px; align-items: center; }
+        #dynamicFieldsContainer input:first-of-type { flex-grow: 1; }
+        .remove-field-btn { background-color: var(--danger-color); color: white; min-width: 48px; height: 48px; padding: 0; flex-shrink: 0; }
+
+        .order-filters { display: flex; gap: 10px; margin-bottom: 20px; justify-content: center; }
+        .order-filters .filter-btn { background: var(--light-color); border: 1px solid var(--accent-color); color: var(--dark-color); flex-grow: 1; }
+        .order-filters .filter-btn.active { background: var(--primary-color); color: white; border-color: var(--primary-color); }
+
+        .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0, 0, 0, 0.6); display: flex; align-items: center; justify-content: center; z-index: 1000; opacity: 0; visibility: hidden; transition: all 0.3s ease; }
+        .modal-overlay.active { opacity: 1; visibility: visible; }
+        .modal-content { background: var(--bg-color); color: var(--dark-color); border-radius: 16px; width: 90%; max-width: 500px; padding: 25px; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2); transform: scale(0.95); transition: transform 0.3s ease; max-height: 90vh; overflow-y: auto; }
+        .modal-overlay.active .modal-content { transform: scale(1); }
+        .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .modal-title { font-size: 1.4rem; color: var(--dark-color); font-weight: 700; }
+        .close-modal { background: transparent; color: var(--dark-color); border: none; font-size: 1.8rem; cursor: pointer; line-height: 1; }
+        .form-group { margin-bottom: 15px; }
+        .form-label { display: block; margin-bottom: 5px; font-weight: 600; font-size: 0.9rem; }
+        .form-input, .form-select { width: 100%; padding: 14px 20px; border-radius: 12px; border: 1px solid #ddd; font-size: 1rem; background: var(--light-color); color: var(--dark-color); }
+        textarea.form-input { min-height: 100px; }
+        .modal-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 25px; }
+
+        #notification-container { position: fixed; top: 80px; left: 50%; transform: translateX(-50%); z-index: 2000; }
+        .toast-notification { padding: 15px 20px; border-radius: 8px; color: white; box-shadow: 0 4px 15px rgba(0,0,0,0.2); transform: translateY(-120%); opacity: 0; transition: all 0.5s cubic-bezier(0.68, -0.55, 0.27, 1.55); }
+        .toast-notification.show { transform: translateY(0); opacity: 1; }
+        .toast-notification.success { background-color: var(--success-color); }
+        .toast-notification.error { background-color: var(--danger-color); }
+
+        /* --- NEW: Sleek Install Prompt Styles --- */
+        #install-prompt-overlay {
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+            background-color: rgba(0,0,0,0.4);
+            backdrop-filter: blur(5px);
+            z-index: 2000;
+            opacity: 0;
+            transition: opacity 0.3s ease-in-out;
+            pointer-events: none;
+        }
+        #install-prompt-overlay.visible {
+            opacity: 1;
+            pointer-events: auto;
+        }
+        .install-prompt-sheet {
+            position: fixed;
+            bottom: 0; left: 0; right: 0;
+            background: var(--light-color);
+            padding: 20px 20px 30px 20px;
+            border-top-left-radius: 20px;
+            border-top-right-radius: 20px;
+            box-shadow: 0 -5px 30px rgba(0,0,0,0.15);
+            transform: translateY(100%);
+            transition: transform 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+            text-align: center;
+        }
+        #install-prompt-overlay.visible .install-prompt-sheet {
+            transform: translateY(0);
+        }
+        .install-prompt-header {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 15px;
+        }
+        .install-prompt-icon-wrapper {
+            width: 60px; height: 60px;
+            border-radius: 16px;
+            background: linear-gradient(45deg, var(--primary-color), var(--secondary-color));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 2rem;
+            box-shadow: 0 4px 12px rgba(10, 171, 181, 0.3);
+        }
+        .install-prompt-header h4 {
+            font-size: 1.3rem;
+            color: var(--dark-color);
+        }
+        .install-prompt-sheet p {
+            color: var(--text-muted);
+            font-size: 0.95rem;
+            line-height: 1.5;
+            max-width: 350px;
+            margin: 0 auto 25px auto;
+        }
+        .install-prompt-actions {
+            display: grid;
+            gap: 12px;
+        }
+        .install-prompt-actions .btn {
+            width: 100%;
+            padding: 14px;
+            font-size: 1rem;
+        }
+        #install-btn-later {
+            background-color: #e2e8f0;
+            color: var(--dark-color);
+        }
+    </style>
+</head>
+<body>
+    <header class="app-header"><h1><i class="fas fa-cut"></i> Tailor's Notebook</h1></header>
+
+    <div id="appContainer">
+        <!-- VIEWS (Content remains the same) -->
+        <div id="customersView" class="view active"><div class="container"><div class="page-header"><h1 class="page-title">Customers</h1><button class="btn btn-icon" id="addCustomerBtn"><i class="fas fa-user-plus"></i></button></div><div class="search-container"><i class="fas fa-search"></i><input type="text" id="customerSearchInput" class="search-input" placeholder="Search by name or number..."></div><div id="customerList" class="item-list"></div></div></div>
+        <div id="customerDashboardView" class="view"><div class="container"><div class="page-header"><button class="btn btn-icon back-to-customers-btn"><i class="fas fa-arrow-left"></i></button><h1 class="page-title" id="dashboardCustomerName" style="text-align: right;"></h1></div><div class="financial-summary"><div class="summary-card"><div class="label">Total Billed</div><div class="amount" id="totalBilled">₹0</div></div><div class="summary-card"><div class="label">Total Paid</div><div class="amount" id="totalPaid">₹0</div></div><div class="summary-card"><div class="label">Balance Due</div><div class="amount due" id="balanceDue">₹0</div></div></div><div class="dashboard-actions"><button class="btn" id="recordPaymentBtn" style="background-color: var(--success-color); color: white;"><i class="fas fa-money-bill-wave"></i> Record Payment</button><button class="btn" id="whatsappShareBtn" style="background-color: #25D366; color: white;"><i class="fab fa-whatsapp"></i> Request Due</button></div><h2 class="section-title">Order History</h2><div id="dashboardOrderList" class="item-list"></div><h2 class="section-title">Payment History</h2><div id="dashboardPaymentList" class="item-list"></div></div></div>
+        <div id="measurementsView" class="view"><div class="container"><div class="page-header"><h1 class="page-title">Measurements</h1><button class="btn btn-icon" id="addMeasurementSetBtn"><i class="fas fa-plus"></i></button></div><div id="m_customerHeader" class="customer-selection-header"></div><div id="measurementSetList" class="item-list"></div></div></div>
+        <div id="ordersView" class="view"><div class="container"><div class="page-header"><h1 class="page-title">Orders</h1><button class="btn btn-icon" id="addNewOrderFromOrdersViewBtn"><i class="fas fa-plus"></i></button></div><div id="o_customerHeader" class="customer-selection-header"></div><div class="order-filters" id="orderFilters"><button class="btn filter-btn active" data-filter="All">All</button><button class="btn filter-btn" data-filter="Pending">Pending</button><button class="btn filter-btn" data-filter="Delivered">Delivered</button></div><div id="allOrdersList" class="item-list"></div></div></div>
+        <div id="settingsView" class="view"><div class="container"><div class="page-header"><h1 class="page-title">Settings</h1></div><div class="card" style="padding: 20px;"><h2 class="section-title" style="margin-top:0;">Data Management</h2><p style="color:var(--text-muted); margin-bottom: 20px;">Backup your app data to a file or restore from a previous backup.</p><div style="display: grid; gap: 15px;"><button class="btn btn-primary" id="backupBtn"><i class="fas fa-download"></i> Backup All Data</button><label for="restoreFile" class="btn" style="background:var(--warning-color); color:var(--dark-color); cursor: pointer;"><i class="fas fa-upload"></i> Restore from File</label><input type="file" id="restoreFile" style="display:none;" accept=".json"></div></div></div></div>
+    </div>
+
+    <!-- MODALS (Identical to previous version) -->
+    <div class="modal-overlay" id="customerFormModal"> <div class="modal-content"> <div class="modal-header"><h2 class="modal-title" id="customerFormTitle">Add Customer</h2><button class="close-modal">×</button></div><form id="customerForm"><input type="hidden" id="customerId"><div class="form-group"><label class="form-label">Customer Name</label><input type="text" class="form-input" id="customerNameInput" required></div><div class="form-group"><label class="form-label">Phone Number</label><input type="tel" class="form-input" id="customerPhoneInput" required></div><div class="modal-actions"><button type="submit" class="btn btn-primary">Save Customer</button></div></form> </div></div>
+    <div class="modal-overlay" id="measurementSetFormModal"> <div class="modal-content"> <div class="modal-header"><h2 class="modal-title" id="measurementSetFormTitle">New Measurement Set</h2><button class="close-modal">×</button></div><form id="measurementSetForm"><input type="hidden" id="measurementSetId"><input type="hidden" id="m_formCustomerId"> <div class="form-group"><label class="form-label">Set Name (e.g., Blouse, Kurta)</label><input type="text" class="form-input" id="m_setNameInput" required></div><hr style="margin: 20px 0; border: 1px solid var(--accent-color);"><div id="dynamicFieldsContainer"></div><button type="button" class="btn" id="addMeasurementFieldBtn" style="background: var(--secondary-color); color: var(--dark-color); margin-top: 10px;"><i class="fas fa-plus"></i> Add Field</button><div class="modal-actions"><button type="submit" class="btn btn-primary">Save Set</button></div></form> </div></div>
+    <div class="modal-overlay" id="orderFormModal"> <div class="modal-content"> <div class="modal-header"><h2 class="modal-title" id="orderFormTitle">New Order</h2><button class="close-modal">×</button></div><form id="orderForm"><input type="hidden" id="orderId"><input type="hidden" id="o_formCustomerId"><div class="form-group"> <label class="form-label">Measurement Set</label> <select id="o_measurementSetSelect" class="form-select" required></select> </div><div class="form-group"><label class="form-label">Price (₹)</label><input type="number" class="form-input" id="o_priceInput" required></div><div class="form-group"><label class="form-label">Delivery Date</label><input type="date" class="form-input" id="o_deliveryDateInput"></div><div class="form-group"><label class="form-label">Notes</label><textarea class="form-input" id="o_notesInput"></textarea></div><div class="modal-actions"><button type="submit" class="btn btn-primary">Save Order</button></div></form> </div></div>
+    <div class="modal-overlay" id="paymentFormModal"> <div class="modal-content"> <div class="modal-header"><h2 class="modal-title">Record Payment</h2><button class="close-modal">×</button></div><form id="paymentForm"><div class="form-group"><label class="form-label">Payment Amount (₹)</label><input type="number" class="form-input" id="paymentAmountInput" required></div><div class="form-group"><label class="form-label">Payment Date</label><input type="date" class="form-input" id="paymentDateInput" required></div><div class="modal-actions"><button type="submit" class="btn btn-primary">Save Payment</button></div></form> </div></div>
+    <div class="modal-overlay" id="confirmationModal"> <div class="modal-content" style="max-width: 400px; text-align: center;"> <h2 class="modal-title" id="confirmationTitle" style="justify-content: center;">Are you sure?</h2> <p id="confirmationMessage" style="margin-top: 10px; color: var(--text-muted);"></p><div style="display: flex; gap: 10px; justify-content: center; margin-top: 20px;"> <button class="btn" id="confirmCancelBtn" style="background: #ccc;">Cancel</button> <button class="btn btn-primary" id="confirmOkBtn" style="background: var(--danger-color);">Confirm</button> </div></div></div>
+    
+    <div id="notification-container"></div>
+    
+    <!-- Install Prompt -->
+    <div id="install-prompt-overlay">
+        <div class="install-prompt-sheet">
+            <div class="install-prompt-header">
+                <div class="install-prompt-icon-wrapper"><i class="fas fa-cut"></i></div>
+                <h4>Install Tailor's Notebook</h4>
+            </div>
+            <p>Get a faster, full-screen experience by adding this app to your home screen.</p>
+            <div class="install-prompt-actions">
+                <button class="btn btn-primary" id="install-btn-now">Install App</button>
+                <button class="btn" id="install-btn-later">Not Now</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- BOTTOM NAVIGATION -->
+    <nav class="bottom-nav">
+        <div class="nav-item active" data-view="customersView"><i class="fas fa-users"></i><span>Customers</span></div>
+        <div class="nav-item" data-view="measurementsView"><i class="fas fa-ruler-combined"></i><span>Measurements</span></div>
+        <div class="nav-item" data-view="ordersView"><i class="fas fa-box-open"></i><span>Orders</span></div>
+        <div class="nav-item" data-view="settingsView"><i class="fas fa-cog"></i><span>Settings</span></div>
+    </nav>
+
+    <script>
+    document.addEventListener('DOMContentLoaded', () => {
+        let selectedCustomer = null; 
+        let currentDashboardCustomer = null;
+        const DB_KEY = 'tailorApp_data_v6';
+
+        // --- PWA INSTALL LOGIC ---
+        let deferredInstallPrompt = null;
+        const installOverlay = document.getElementById('install-prompt-overlay');
+        const installButton = document.getElementById('install-btn-now');
+        const laterButton = document.getElementById('install-btn-later');
+
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredInstallPrompt = e;
+            if (!window.matchMedia('(display-mode: standalone)').matches) {
+                installOverlay.classList.add('visible');
+            }
+        });
+
+        installButton.addEventListener('click', async () => {
+            if (deferredInstallPrompt) {
+                deferredInstallPrompt.prompt();
+                const { outcome } = await deferredInstallPrompt.userChoice;
+                if(outcome === 'accepted') showNotification("App installed successfully!", 'success');
+                deferredInstallPrompt = null;
+                installOverlay.classList.remove('visible');
+            }
+        });
+
+        laterButton.addEventListener('click', () => {
+            installOverlay.classList.remove('visible');
+        });
+
+        const getDb = () => JSON.parse(localStorage.getItem(DB_KEY)) || { customers: [], measurementSets: [], orders: [], transactions: [] };
+        const saveDb = (data) => localStorage.setItem(DB_KEY, JSON.stringify(data));
+        const generateId = () => '_' + Math.random().toString(36).substr(2, 9);
+        const showNotification = (msg, type = 'success') => { const c = document.getElementById('notification-container'), n = document.createElement('div'); n.className = `toast-notification ${type}`; n.innerHTML = `<i class="fas ${type === 'success' ? 'fa-check-circle' : 'fa-times-circle'}"></i> ${msg}`; c.appendChild(n); setTimeout(() => n.classList.add('show'), 10); setTimeout(() => { n.classList.remove('show'); setTimeout(() => n.remove(), 500); }, 3000); };
+        const openModal = (id) => document.getElementById(id).classList.add('active');
+        const closeModal = (id) => document.getElementById(id).classList.remove('active');
+        const showConfirmation = (title, msg, onConfirm) => { const m = document.getElementById('confirmationModal'); document.getElementById('confirmationTitle').textContent = title; document.getElementById('confirmationMessage').textContent = msg; openModal('confirmationModal'); const ok = document.getElementById('confirmOkBtn'), cc = document.getElementById('confirmCancelBtn'); const hC = () => { onConfirm(); cl(); }; const cL = () => cl(); function cl() { closeModal('confirmationModal'); ok.removeEventListener('click', hC); cc.removeEventListener('click', cL); } ok.addEventListener('click', hC, { once: true }); cc.addEventListener('click', cL, { once: true }); };
+        
+        const allViews = document.querySelectorAll('.view'), allNavItems = document.querySelectorAll('.nav-item');
+        const switchView = (viewId) => { allViews.forEach(v => v.classList.remove('active')); document.getElementById(viewId).classList.add('active'); allNavItems.forEach(item => item.classList.toggle('active', item.dataset.view === viewId)); window.scrollTo(0, 0); };
+        allNavItems.forEach(item => { item.addEventListener('click', () => { const viewId = item.dataset.view; if(viewId === 'customersView') renderCustomers(); if(viewId === 'measurementsView') renderMeasurementSets(); if(viewId === 'ordersView') renderCustomerOrders(); switchView(viewId); }); });
+        
+        const customerList = document.getElementById('customerList'), customerSearchInput = document.getElementById('customerSearchInput');
+        const renderCustomers = () => { const db = getDb(), filter = customerSearchInput.value.toLowerCase(), customers = db.customers.filter(c => c.name.toLowerCase().includes(filter) || c.phone.includes(filter)).sort((a,b) => a.name.localeCompare(b.name)); customerList.innerHTML = ''; if (customers.length === 0) { customerList.innerHTML = `<div class="empty-state"><i class="fas fa-users"></i><p>No customers found. Tap the <i class="fas fa-user-plus"></i> to add one!</p></div>`; return; } customers.forEach(c => { customerList.innerHTML += `<div class="card" data-id="${c.id}"><div class="card-header"><div><h3 class="card-title">${c.name}</h3><p class="card-subtitle"><i class="fas fa-phone-alt"></i> ${c.phone}</p></div><div class="card-actions"><button class="action-btn call" title="Call"><i class="fas fa-phone"></i></button><button class="action-btn edit" title="Edit"><i class="fas fa-edit"></i></button><button class="action-btn delete" title="Delete"><i class="fas fa-trash"></i></button></div></div></div>`; }); };
+        customerSearchInput.addEventListener('input', renderCustomers);
+        customerList.addEventListener('click', (e) => { const card = e.target.closest('.card'); if (!card) return; const customerId = card.dataset.id, db = getDb(), customer = db.customers.find(c => c.id === customerId); if (e.target.closest('.action-btn.edit')) { openCustomerModal(false, customer); } else if (e.target.closest('.action-btn.call')) { window.location.href = `tel:${customer.phone}`; } else if (e.target.closest('.action-btn.delete')) { showConfirmation('Delete Customer?', `This will permanently delete ${customer.name} and all their data.`, () => { let db = getDb(); db.customers = db.customers.filter(c => c.id !== customerId); db.measurementSets = db.measurementSets.filter(ms => ms.customerId !== customerId); db.orders = db.orders.filter(o => o.customerId !== customerId); db.transactions = db.transactions.filter(t => t.customerId !== customerId); saveDb(db); if (selectedCustomer && selectedCustomer.id === customerId) selectedCustomer = null; renderCustomers(); showNotification('Customer deleted.', 'success'); }); } else { selectedCustomer = customer; currentDashboardCustomer = customer; renderCustomerDashboard(); switchView('customerDashboardView'); } });
+        document.getElementById('addCustomerBtn').addEventListener('click', () => openCustomerModal(true));
+        const openCustomerModal = (isNew, customer = {}) => { const f = document.getElementById('customerForm'); f.reset(); document.getElementById('customerFormTitle').textContent = isNew ? 'Add Customer' : 'Edit Customer'; f.customerId.value = isNew ? '' : customer.id; f.customerNameInput.value = isNew ? '' : customer.name; f.customerPhoneInput.value = isNew ? '' : customer.phone; openModal('customerFormModal'); };
+        document.getElementById('customerForm').addEventListener('submit', (e) => { e.preventDefault(); const db = getDb(), id = document.getElementById('customerId').value, d = { name: document.getElementById('customerNameInput').value, phone: document.getElementById('customerPhoneInput').value }; if (id) { const i = db.customers.findIndex(c => c.id === id); if (i > -1) db.customers[i] = { ...db.customers[i], ...d }; } else { db.customers.push({ id: generateId(), ...d }); } saveDb(db); renderCustomers(); showNotification(`Customer ${id ? 'updated' : 'saved'}!`, 'success'); closeModal('customerFormModal'); });
+        
+        document.querySelectorAll('.back-to-customers-btn').forEach(btn => btn.addEventListener('click', () => { currentDashboardCustomer = null; switchView('customersView'); }));
+        const renderCustomerDashboard = () => { if (!currentDashboardCustomer) return; const db = getDb(); document.getElementById('dashboardCustomerName').textContent = currentDashboardCustomer.name; const orders = db.orders.filter(o => o.customerId === currentDashboardCustomer.id), transactions = db.transactions.filter(t => t.customerId === currentDashboardCustomer.id); const totalBilled = orders.reduce((sum, o) => sum + (o.price || 0), 0), totalPaid = transactions.reduce((sum, t) => sum + (t.amount || 0), 0); document.getElementById('totalBilled').textContent = `₹${totalBilled.toFixed(2)}`; document.getElementById('totalPaid').textContent = `₹${totalPaid.toFixed(2)}`; document.getElementById('balanceDue').textContent = `₹${(totalBilled - totalPaid).toFixed(2)}`; const oList = document.getElementById('dashboardOrderList'); oList.innerHTML = orders.length === 0 ? `<div class="empty-state" style="padding: 20px;"><p>No orders yet.</p></div>` : orders.sort((a,b) => new Date(b.createdAt) - new Date(a.createdAt)).map(o => { const m = db.measurementSets.find(ms => ms.id === o.measurementSetId); return `<div class="card order-card ${o.status}" data-id="${o.id}"><div class="card-header" style="flex-direction: column; align-items: flex-start; gap: 10px;"><div style="display: flex; justify-content: space-between; width: 100%;"><h3 class="card-title">₹${o.price.toFixed(2)}</h3><span class="card-subtitle">${o.status}</span></div><p class="card-subtitle">${m ? m.setName : 'No Measurement Set'}</p><p class="card-subtitle">Delivery: ${o.deliveryDate ? new Date(o.deliveryDate).toLocaleDateString() : 'Not set'}</p></div></div>`; }).join(''); const pList = document.getElementById('dashboardPaymentList'); pList.innerHTML = transactions.length === 0 ? `<div class="empty-state" style="padding: 20px;"><p>No payments recorded.</p></div>` : transactions.sort((a,b) => new Date(b.createdAt) - new Date(a.createdAt)).map(t => `<div class="card" style="border-left-color: var(--success-color);"><div class="card-header"><h3 class="card-title">₹${t.amount.toFixed(2)}</h3><p class="card-subtitle">${new Date(t.createdAt).toLocaleDateString()}</p></div></div>`).join(''); };
+        document.getElementById('recordPaymentBtn').addEventListener('click', () => { const f=document.getElementById('paymentForm'); f.reset(); f.paymentDateInput.valueAsDate = new Date(); openModal('paymentFormModal'); });
+        document.getElementById('whatsappShareBtn').addEventListener('click', () => { const b = document.getElementById('balanceDue').textContent; if (parseFloat(b.replace('₹','')) <= 0) { showNotification('No balance due!', 'success'); return; } const m = `Hello ${currentDashboardCustomer.name},\nThis is a friendly reminder for your outstanding balance of ${b}. Thank you!`, p = currentDashboardCustomer.phone.replace(/\D/g, ''); window.open(`https://wa.me/${p}?text=${encodeURIComponent(m)}`, '_blank'); });
+
+        const changeCustomer = () => { selectedCustomer = null; renderCustomers(); switchView('customersView'); };
+        const renderMeasurementSets = () => { const h = document.getElementById('m_customerHeader'), l = document.getElementById('measurementSetList'); if (!selectedCustomer) { h.style.display = 'none'; l.innerHTML = `<div class="empty-state"><i class="fas fa-user-check"></i><p>Please select a customer first to see their measurements.</p><button class="btn btn-primary" id="m_selectCustomerBtn">Select a Customer</button></div>`; document.getElementById('m_selectCustomerBtn').addEventListener('click', () => switchView('customersView')); return; } h.style.display = 'flex'; h.innerHTML = `<p>Showing for: <strong>${selectedCustomer.name}</strong></p><button class="btn change-customer-btn">Change</button>`; const sets = getDb().measurementSets.filter(s => s.customerId === selectedCustomer.id); l.innerHTML = ''; if (sets.length === 0) { l.innerHTML = `<div class="empty-state"><i class="fas fa-ruler-combined"></i><p>No measurement sets for this customer.</p></div>`; } else { sets.forEach(s => { l.innerHTML += `<div class="card" data-id="${s.id}"><div class="card-header"><h3 class="card-title">${s.setName}</h3><div class="card-actions"><button class="action-btn edit" title="Edit"><i class="fas fa-edit"></i></button><button class="action-btn delete" title="Delete"><i class="fas fa-trash"></i></button></div></div></div>`; }); } };
+        const renderCustomerOrders = (statusFilter = 'All') => { const h = document.getElementById('o_customerHeader'), l = document.getElementById('allOrdersList'), f = document.getElementById('orderFilters'); if (!selectedCustomer) { h.style.display = 'none'; f.style.display = 'none'; l.innerHTML = `<div class="empty-state"><i class="fas fa-user-check"></i><p>Please select a customer first to see their orders.</p><button class="btn btn-primary" id="o_selectCustomerBtn">Select a Customer</button></div>`; document.getElementById('o_selectCustomerBtn').addEventListener('click', () => switchView('customersView')); return; } h.style.display = 'flex'; f.style.display = 'flex'; h.innerHTML = `<p>Showing for: <strong>${selectedCustomer.name}</strong></p><button class="btn change-customer-btn">Change</button>`; let orders = getDb().orders.filter(o => o.customerId === selectedCustomer.id); if (statusFilter !== 'All') { orders = orders.filter(o => o.status === statusFilter); } l.innerHTML = ''; if (orders.length === 0) { l.innerHTML = `<div class="empty-state"><i class="fas fa-box-open"></i><p>No ${statusFilter.toLowerCase()} orders found.</p></div>`; } else { orders.sort((a,b) => new Date(b.createdAt) - new Date(a.createdAt)).forEach(o => { l.innerHTML += `<div class="card order-card ${o.status}" data-order-id="${o.id}"><div class="card-header"><div><h3 class="card-title">Order - ₹${o.price.toFixed(2)}</h3><p class="card-subtitle">Delivery: ${o.deliveryDate ? new Date(o.deliveryDate).toLocaleDateString() : 'Not set'}</p></div><div class="card-actions">${o.status === 'Pending' ? `<button class="action-btn edit" title="Edit Order"><i class="fas fa-edit"></i></button>` : ''}<span class="card-subtitle" style="align-self:center; margin-left:10px;">${o.status}</span></div></div>${o.status === 'Pending' ? `<div class="card-body"><button class="btn btn-primary" style="width:100%;" data-action="complete">Mark as Delivered</button></div>` : ''}</div>`; }); } };
+
+        document.body.addEventListener('click', (e) => {
+            if(e.target.matches('.change-customer-btn')) { changeCustomer(); }
+            if(e.target.matches('.action-btn.edit') && e.target.closest('#measurementSetList')) { const s = getDb().measurementSets.find(s => s.id === e.target.closest('.card').dataset.id); openMeasurementSetModal(false, s); }
+            if(e.target.matches('.action-btn.delete') && e.target.closest('#measurementSetList')) { const id = e.target.closest('.card').dataset.id; showConfirmation('Delete Set?', 'This action cannot be undone.', () => { let db = getDb(); db.measurementSets = db.measurementSets.filter(s => s.id !== id); saveDb(db); renderMeasurementSets(); showNotification('Measurement set deleted.', 'success'); }); }
+            if(e.target.matches('[data-action="complete"]')) { const id = e.target.closest('.card').dataset.orderId, db = getDb(), i = db.orders.findIndex(o => o.id === id); if (i > -1) { db.orders[i].status = 'Delivered'; saveDb(db); showNotification('Order marked as Delivered!', 'success'); renderCustomerOrders(document.querySelector('#orderFilters .filter-btn.active').dataset.filter); } }
+            if(e.target.matches('.action-btn.edit') && e.target.closest('#allOrdersList')) { const orderId = e.target.closest('.card').dataset.orderId, db = getDb(), order = db.orders.find(o => o.id === orderId), customer = db.customers.find(c => c.id === order.customerId); if(order && customer) openOrderModal(false, customer, order); }
+        });
+
+        document.getElementById('addMeasurementSetBtn').addEventListener('click', () => { if (!selectedCustomer) { showNotification('Please select a customer first!', 'error'); switchView('customersView'); return; } openMeasurementSetModal(true, selectedCustomer); });
+        document.getElementById('addNewOrderFromOrdersViewBtn').addEventListener('click', () => { if (!selectedCustomer) { showNotification('Please select a customer first!', 'error'); switchView('customersView'); return; } openOrderModal(true, selectedCustomer); });
+        document.getElementById('orderFilters').addEventListener('click', (e) => { const f = e.target.closest('.filter-btn'); if (!f) return; document.querySelectorAll('#orderFilters .filter-btn').forEach(b => b.classList.remove('active')); f.classList.add('active'); renderCustomerOrders(f.dataset.filter); });
+        
+        let dynamicFieldIndex = 0;
+        const addDynamicField = (n = '', v = '') => { const c = document.getElementById('dynamicFieldsContainer'), f = document.createElement('div'); f.className = 'form-group'; f.innerHTML = `<input type="text" class="form-input field-name" placeholder="Measurement Name" value="${n}" required> <input type="text" class="form-input field-value" placeholder="Value (e.g., 15in)" value="${v}" required> <button type="button" class="btn action-btn remove-field-btn"><i class="fas fa-trash"></i></button>`; c.appendChild(f); f.querySelector('.remove-field-btn').addEventListener('click', () => f.remove()); };
+        document.getElementById('addMeasurementFieldBtn').addEventListener('click', () => addDynamicField());
+        const openMeasurementSetModal = (isNew, customerOrSet) => { const form = document.getElementById('measurementSetForm'); form.reset(); const customer = isNew ? customerOrSet : getDb().customers.find(c => c.id === customerOrSet.customerId); form.m_formCustomerId.value = customer.id; form.measurementSetId.value = isNew ? '' : customerOrSet.id; form.m_setNameInput.value = isNew ? '' : customerOrSet.setName; const fieldsContainer = document.getElementById('dynamicFieldsContainer'); fieldsContainer.innerHTML = ''; if (isNew) { addDynamicField('Neck', ''); addDynamicField('Shoulder', ''); } else { customerOrSet.fields.forEach(f => addDynamicField(f.name, f.value)); } openModal('measurementSetFormModal'); };
+        document.getElementById('measurementSetForm').addEventListener('submit', (e) => { e.preventDefault(); const db = getDb(), form = e.target, id = form.measurementSetId.value, fields = []; document.querySelectorAll('#dynamicFieldsContainer .form-group').forEach(g => { const n = g.querySelector('.field-name').value.trim(), v = g.querySelector('.field-value').value.trim(); if (n && v) fields.push({ name: n, value: v }); }); const setData = { customerId: form.m_formCustomerId.value, setName: form.m_setNameInput.value, fields: fields }; if (id) { const i = db.measurementSets.findIndex(s => s.id === id); if (i > -1) db.measurementSets[i] = { ...db.measurementSets[i], ...setData }; } else { db.measurementSets.push({ id: generateId(), ...setData }); } saveDb(db); renderMeasurementSets(); showNotification(`Measurement set ${id ? 'updated' : 'saved'}!`, 'success'); closeModal('measurementSetFormModal'); });
+        const openOrderModal = (isNew, customer, order = {}) => { const form = document.getElementById('orderForm'); form.reset(); form.o_formCustomerId.value = customer.id; document.getElementById('orderFormTitle').textContent = isNew ? 'New Order' : 'Edit Order'; form.orderId.value = isNew ? '' : order.id; const select = form.o_measurementSetSelect; select.innerHTML = '<option value="">-- Select Measurements --</option>'; getDb().measurementSets.filter(s => s.customerId === customer.id).forEach(s => { select.innerHTML += `<option value="${s.id}">${s.setName}</option>`; }); if(!isNew) { select.value = order.measurementSetId; form.o_priceInput.value = order.price; form.o_deliveryDateInput.value = order.deliveryDate; form.o_notesInput.value = order.notes; } openModal('orderFormModal'); };
+        document.getElementById('orderForm').addEventListener('submit', (e) => { e.preventDefault(); const db = getDb(), form = e.target, id = form.orderId.value; const orderData = { customerId: form.o_formCustomerId.value, measurementSetId: form.o_measurementSetSelect.value, price: parseFloat(form.o_priceInput.value), deliveryDate: form.o_deliveryDateInput.value, notes: form.o_notesInput.value }; if (id) { const i = db.orders.findIndex(o => o.id === id); if (i > -1) db.orders[i] = { ...db.orders[i], ...orderData, status: 'Pending' }; } else { db.orders.push({ id: generateId(), ...orderData, status: 'Pending', createdAt: new Date().toISOString() }); } saveDb(db); if(currentDashboardCustomer && currentDashboardCustomer.id === orderData.customerId) renderCustomerDashboard(); renderCustomerOrders(document.querySelector('#orderFilters .filter-btn.active').dataset.filter); showNotification(`Order ${id ? 'updated' : 'saved'}!`, 'success'); closeModal('orderFormModal'); });
+        document.getElementById('paymentForm').addEventListener('submit', (e) => { e.preventDefault(); const db = getDb(); db.transactions.push({ id: generateId(), customerId: currentDashboardCustomer.id, amount: parseFloat(document.getElementById('paymentAmountInput').value), createdAt: new Date(document.getElementById('paymentDateInput').value).toISOString() }); saveDb(db); renderCustomerDashboard(); showNotification('Payment recorded!', 'success'); closeModal('paymentFormModal'); });
+        
+        document.getElementById('backupBtn').addEventListener('click', () => { const d = localStorage.getItem(DB_KEY); if (!d) { showNotification('No data to backup.', 'error'); return; } const b = new Blob([d], { type: 'application/json' }), l = document.createElement('a'); l.download = `tailor-app-backup-${new Date().toISOString().split('T')[0]}.json`; l.href = URL.createObjectURL(b); l.click(); URL.revokeObjectURL(l.href); showNotification('Backup downloaded.', 'success'); });
+        document.getElementById('restoreFile').addEventListener('change', (e) => { const f = e.target.files[0]; if (!f) return; const r = new FileReader(); r.onload = (ev) => { try { const d = JSON.parse(ev.target.result); if (d.customers && d.measurementSets && d.orders && d.transactions) { showConfirmation('Replace Data?', 'This will replace all current data. Are you sure?', () => { saveDb(d); showNotification('Data restored!', 'success'); selectedCustomer = null; renderCustomers(); switchView('customersView'); }); } else { showNotification('Invalid backup file.', 'error'); } } catch (err) { showNotification('Error reading file.', 'error'); } }; r.readAsText(f); e.target.value = ''; });
+        document.querySelectorAll('.modal-overlay').forEach(m => { m.addEventListener('click', e => { if (e.target.classList.contains('modal-overlay') || e.target.classList.contains('close-modal')) { closeModal(m.id); } }); });
+        
+        renderCustomers();
+    });
+    </script>
+</body>
+</html>
