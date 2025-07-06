@@ -8,14 +8,16 @@
   "orientation": "portrait-primary",
   "icons": [
     {
-      "src": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxOTIgMTkyIiBmaWxsPSJub25lIj48cGF0aCBkPSJNMCAwaDE5MnYxOTJIMHoiLz48cmVjdCB3aWR0aD0iMTkyIiBoZWlnaHQ9IjE5MiIgcng9IjMyIiBmaWxsPSIjMEFCQUI1Ii8+PHBhdGggc3Ryb2tlPSIjZmZmIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiIHN0cm9rZS13aWR0aD0iMTIiIGQ9Ik02My40MyAxMjguNThMODguMyA5Mi4xNG0zNS4yOCAyLjIyTDEwMi4zIDExOG0tLjQzIDBMNjMgOTJtNjAuNDMgMzYuNThsLTM4LjU3LTM1LjQ0TTc2IDY0YTcgNyAwIDEgMCAwLTE0IDcgNyAwIDAgMCAwIDE0Wm00MCAwYTcgNyAwIDEgMCAwLTE0IDcgNyAwIDAgMCAwIDE0WiIvPjwvc3ZnPg==",
+      "src": "TailorApp-192x192.png",
+      "type": "image/png",
       "sizes": "192x192",
-      "type": "image/svg+xml"
+      "purpose": "any maskable"
     },
     {
-      "src": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1MTIgNTEyIiBmaWxsPSJub25lIj48cGF0aCBkPSJNMCAwaDUxMnY1MTJIMHoiLz48cmVjdCB3aWR0aD0iNTEyIiBoZWlnaHQ9IjUxMiIgcng9IjY0IiBmaWxsPSIjMEFCQUI1Ii8+PHBhdGggc3Ryb2tlPSIjZmZmIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiIHN0cm9rZS13aWR0aD0iMjQiIGQ9Im0xNzQuNDggMzQ4LjIyTDI0MC44IDI0NS43bTk0LjA4IDUuOTJM Mjc4LjE0IDMxNC42N20tMS4xNSAwbC05Ny4wNy05MS4yM20xNjEuMTUgOTcuNTVM MjU4LjE1IDI1Ny4xN00yMDggMTc2YTMyIDMyIDAgMSAwIDAtNjQgMzIgMzIgMCAwIDAgMCA2NFptOTYgMGEzMiAzMiAwIDEgMCAwLTY0IDMyIDMyIDAgMCAwIDAgNjRaIi8+PC9zdmc+",
+      "src": "TailorApp-512x512.png",
+      "type": "image/png",
       "sizes": "512x512",
-      "type": "image/svg+xml"
+      "purpose": "any maskable"
     }
   ]
 }
